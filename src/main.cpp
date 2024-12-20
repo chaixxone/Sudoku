@@ -37,22 +37,30 @@ bool isGridIndex(size_t index, size_t dimentionSize)
     return index != 0 && index != dimentionSize - 1 && (index + 1) % 3 == 0;
 }
 
-HANDLE cursorHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+void enableANSI()
+{
+    DWORD mode = 0;
+    GetConsoleMode(handle, &mode);
+    // Enabling ANSI escape codes on windows
+    SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+}
 
 void setCursorPosition(int x, int y)
 {
     COORD coordinates{};
     coordinates.X = x;
     coordinates.Y = y;
-    SetConsoleCursorPosition(cursorHandle, coordinates);
+    SetConsoleCursorPosition(handle, coordinates);
 }
 
 void showConsoleCursor(bool showFlag)
 {
     CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(cursorHandle, &cursorInfo);
+    GetConsoleCursorInfo(handle, &cursorInfo);
     cursorInfo.bVisible = showFlag;
-    SetConsoleCursorInfo(cursorHandle, &cursorInfo);
+    SetConsoleCursorInfo(handle, &cursorInfo);
 }
 
 char cursorCharRead()
@@ -75,7 +83,7 @@ void printSudokuBoard(const SudokuBoard& board)
     size_t horisontalGridLength = rowSize + rowSize - 1 + gridDelim.size() * 2;
 
     setCursorPosition(0, 0);
-    std::cout.flush(); // reset stdout buffer
+    //std::cout.flush(); // reset stdout buffer
 
     for (size_t i = 0; i < columnSize; i++)
     {
@@ -91,8 +99,7 @@ void printSudokuBoard(const SudokuBoard& board)
 
         if (isGridIndex(i, columnSize))
         {
-            std::cout << std::endl;
-            
+            std::cout << std::endl;            
 
             for (int k = 0; k < horisontalGridLength; k++)
             {
@@ -299,6 +306,7 @@ void keyboardGameHandle(int delay)
 
 int main()
 {
+    enableANSI();
     keyboardGameHandle(20);
     return 0;
 }

@@ -37,6 +37,36 @@ bool isGridIndex(size_t index, size_t dimentionSize)
     return index != 0 && index != dimentionSize - 1 && (index + 1) % 3 == 0;
 }
 
+HANDLE cursorHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+void setCursorPosition(int x, int y)
+{
+    COORD coordinates{};
+    coordinates.X = x;
+    coordinates.Y = y;
+    SetConsoleCursorPosition(cursorHandle, coordinates);
+}
+
+void showConsoleCursor(bool showFlag)
+{
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(cursorHandle, &cursorInfo);
+    cursorInfo.bVisible = showFlag;
+    SetConsoleCursorInfo(cursorHandle, &cursorInfo);
+}
+
+char cursorCharRead()
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleScreenBufferInfo(hConsole, &csbiInfo);
+    COORD pos = csbiInfo.dwCursorPosition;
+    TCHAR strFromConsole[1];
+    DWORD dwChars;
+    ReadConsoleOutputCharacter(hConsole, strFromConsole, 1, pos, &dwChars);
+    return static_cast<char>(strFromConsole[0]);
+}
+
 void printSudokuBoard(const SudokuBoard& board)
 {
     size_t columnSize = board.size();
@@ -44,8 +74,8 @@ void printSudokuBoard(const SudokuBoard& board)
     std::string gridDelim = "| ";
     size_t horisontalGridLength = rowSize + rowSize - 1 + gridDelim.size() * 2;
 
-    std::cout << "\033[0;0H\033[K"; // move cursor to pos {0, 0}
-    std::cout.flush();              // reset stdout buffer
+    setCursorPosition(0, 0);
+    std::cout.flush(); // reset stdout buffer
 
     for (size_t i = 0; i < columnSize; i++)
     {
@@ -79,36 +109,6 @@ void printSudokuBoard(const SudokuBoard& board)
 
         std::cout << std::endl;
     }
-}
-
-HANDLE cursorHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-void setCursorPosition(int x, int y)
-{
-    COORD coordinates{};
-    coordinates.X = x;
-    coordinates.Y = y;
-    SetConsoleCursorPosition(cursorHandle, coordinates);
-}
-
-void showConsoleCursor(bool showFlag)
-{
-    CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(cursorHandle, &cursorInfo);
-    cursorInfo.bVisible = showFlag;
-    SetConsoleCursorInfo(cursorHandle, &cursorInfo);
-}
-
-char cursorCharRead()
-{
-    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleScreenBufferInfo(hConsole, &csbiInfo);
-    COORD pos = csbiInfo.dwCursorPosition;
-    TCHAR strFromConsole[1];
-    DWORD dwChars;
-    ReadConsoleOutputCharacter(hConsole, strFromConsole, 1, pos, &dwChars);
-    return static_cast<char>(strFromConsole[0]);
 }
 
 inline int getMatrixRow(int index)
